@@ -22,8 +22,8 @@ import javax.swing.SwingUtilities;
 // */
 public class CrearCuenta extends JFrame{
     public CrearCuenta(){
-        setTitle("Menu de Inicio");
-        setSize(300,200);
+        setTitle("Crear Usuario");
+        setSize(300,150);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
@@ -32,7 +32,7 @@ public class CrearCuenta extends JFrame{
         panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         JTextField nombreUsuario = new JTextField();
         JPasswordField password = new JPasswordField();
-        //JButton Ingresar = new JButton("Ingresar");
+        JButton Ingresar = new JButton("Ingresar");
         JButton Cancelar = new JButton("Cancelar");
         
         
@@ -45,17 +45,17 @@ public class CrearCuenta extends JFrame{
                
             });
         });
-//        Ingresar.addActionListener(e -> {
-//            
-//            Jugador.registrarUsuario(nombreUsuario,password,this);
-//           
-//        });
+        Ingresar.addActionListener(e -> {
+            
+            Jugador.registrarUsuario(nombreUsuario,password,this);
+           
+        });
             
          panel.add(new JLabel("Nombre de usuario: "));
         panel.add(nombreUsuario);
         panel.add(new JLabel("Contrasenia: "));
         panel.add(password);
-        //panel.add(Ingresar);
+        panel.add(Ingresar);
         panel.add(Cancelar);
         add(panel,BorderLayout.CENTER);
     }

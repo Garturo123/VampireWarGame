@@ -17,7 +17,7 @@ import javax.swing.SwingUtilities;
  */
 public class IngresarSecion extends JFrame {
     public IngresarSecion(){
-        setTitle("Menu de Inicio");
+        setTitle("Ingresar Usuario");
         setSize(300,150);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -48,12 +48,7 @@ public class IngresarSecion extends JFrame {
         });
         Ingresar.addActionListener(e -> {
             
-            SwingUtilities.invokeLater(()->{
-                MenuPrincipal Inicio = new MenuPrincipal ();
-                this.setVisible(false);
-               Inicio.setVisible(true);
-               
-            });
+            Jugador.IngresarSecion(nombreUsuario.getText(), password.getPassword(), this);
         });
     }
 }

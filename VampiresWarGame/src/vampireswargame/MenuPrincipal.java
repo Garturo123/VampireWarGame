@@ -10,7 +10,7 @@ import javax.swing.*;
 public class MenuPrincipal extends JFrame {
     static Jugador JugadorActual;
     public MenuPrincipal(){
-        setTitle("Menu de Inicio");
+        setTitle("Menu de Principal");
         setSize(300,200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -39,6 +39,26 @@ public class MenuPrincipal extends JFrame {
         panel.add(Box.createVerticalGlue());
         
         add(panel);
-        
+        jugar.addActionListener(e ->{ 
+            SwingUtilities.invokeLater(()->{
+                Juego Inicio = new Juego ();
+                this.setVisible(false);
+               Inicio.setVisible(true);
+               });
+            });
+        miCuenta.addActionListener(e ->{ 
+            
+            });
+        Reportes.addActionListener(e ->{ 
+            
+            });
+        LogOut.addActionListener(e ->{ 
+            JugadorActual   = null ;
+            SwingUtilities.invokeLater(()->{
+                MenuInicio Inicio = new MenuInicio ();
+                this.setVisible(false);
+               Inicio.setVisible(true);
+               });
+            });
     }
 }

@@ -6,11 +6,7 @@ package vampireswargame;
  */
 import java.util.ArrayList;
 import java.util.Calendar;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 /**
  *
@@ -35,15 +31,15 @@ public class Jugador {
         return userName;
     }
     
-    public boolean buscarJugadorDuplicado(String j, int i){
+    public static Jugador buscarJugador(String j, int i){
         if(jugadores.size()<i){
             
             if(jugadores.get(i).userName.equals(j))
-                return true;
+                return jugadores.get(i);
             
-            return buscarJugadorDuplicado(j, i+=1);
+            return buscarJugador(j, i+=1);
         }
-        return false;
+        return null;
             
     }
     
@@ -84,6 +80,27 @@ public class Jugador {
                principal.setVisible(true);
            });
                     
+    }
+    public static void IngresarSecion(String jugador , char[] password ,JFrame frame){
+        Jugador player = buscarJugador(jugador,0);
+        if(player==null){
+            JOptionPane.showMessageDialog(null, "No hay usuarios con este nombre.");
+
+             return;
+        }
+        String PassWord = new String(password);   
+        if(!player.password.equals(PassWord)){
+            JOptionPane.showMessageDialog(null, "Contrasenia incorrecta.");
+             return;
+        }
+           
+        MenuPrincipal.JugadorActual   = player ;
+            Jugador.jugadores.add(player);
+            SwingUtilities.invokeLater(()->{
+               MenuPrincipal principal = new MenuPrincipal();
+               frame.setVisible(false);
+               principal.setVisible(true);
+           });
     }
     
 }

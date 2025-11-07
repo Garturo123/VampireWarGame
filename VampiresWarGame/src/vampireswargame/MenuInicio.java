@@ -37,13 +37,15 @@ public class MenuInicio extends JFrame{
         
         logIN.addActionListener(e ->{ 
             System.out.println("Log in");
-            
+            IngresarSecion frame = new IngresarSecion();
+             this.setVisible(false);
+               frame.setVisible(true);
                 });
         crearCuenta.addActionListener(e -> {
             SwingUtilities.invokeLater(()->{
-                IngresarSecion Inicio = new IngresarSecion();
+                CrearCuenta frame = new CrearCuenta();
                 this.setVisible(false);
-               Inicio.setVisible(true);
+               frame.setVisible(true);
                
             });
             

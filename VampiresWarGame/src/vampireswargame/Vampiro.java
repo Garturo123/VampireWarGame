@@ -1,0 +1,24 @@
+package vampireswargame;
+
+
+/**
+ *
+ * @author gaat1
+ */
+public class Vampiro extends Pieza {
+    private Piezas vampiro = Piezas.VAMPIRO;
+    private String nombre = "vampiro";
+    
+    public Vampiro() {
+        this.ataque = vampiro.getAtaque();
+        this.escudo = vampiro.getEscudo();
+        this.salud = vampiro.getSalud();
+      
+    }
+    
+    public String getNombre(){
+        return nombre;
+    }
+    
+    
+}
