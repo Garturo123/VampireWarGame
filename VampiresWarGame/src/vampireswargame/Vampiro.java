@@ -1,5 +1,7 @@
 package vampireswargame;
 
+import javax.swing.JButton;
+
 
 /**
  *
@@ -19,6 +21,8 @@ public class Vampiro extends Pieza {
     public String getNombre(){
         return nombre;
     }
-    
+     public void Habilidad(JButton invocador, JButton[][] tablero, Tablero tabla){
+         this.chupar = !this.chupar;
+     }
     
 }

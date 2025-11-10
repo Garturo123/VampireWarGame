@@ -3,6 +3,7 @@ package vampireswargame;
 import java.awt.Color;
 import javax.swing.JButton;
 
+
 /**
  *
  * @author gaat1
@@ -15,13 +16,20 @@ public enum Piezas {
     
     private int fila;
     private int columna;
-    
+    public static int vampirosBlancos = 2;
+    public static int vampirosNegros = 2;
+    public static int lobosBlancos = 2;
+    public static int lobosNegros = 2;
+    public static int muertesBlancas = 2;
+    public static int muertesNegras = 2;
     private final int ataque;
     private final int salud;
     private final int escudo;
     private final int movilidad;
     private final int radioAtaque;
-    
+    public static int blancos = 6;
+    public static int negros = 6;
+    public static boolean seMovio = false;
     private Piezas(int ataque, int salud, int escudo, int movilidad, int radioAtaque){
         this.ataque = ataque;
         this.salud = salud;
@@ -32,7 +40,7 @@ public enum Piezas {
     public void moverse(JButton casilla,  JButton[][] tablero, Tablero tabla){
         fila = (int) casilla.getClientProperty("Fila");
         columna = (int) casilla.getClientProperty("Columna");
-        
+       
         
         String equipo1 = (String) tablero[fila][columna].getClientProperty("equipo");
         Pieza tipo1 = (Pieza) tablero[fila][columna].getClientProperty("Tipo");
@@ -55,6 +63,8 @@ public enum Piezas {
                         for (var al : tablero[i][j].getActionListeners()) {
                             tablero[i][j].removeActionListener(al);
                         }
+                         Pieza tipoActual = (Pieza) tablero[filaO][columnaO].getClientProperty("Tipo");
+                            if(tipoActual == null) return;
                         tablero[i][j].addActionListener(e -> {
                             tablero[f][c].setIcon(tablero[filaO][columnaO].getIcon());
                             tablero[f][c].putClientProperty("Tipo", original);
@@ -64,15 +74,7 @@ public enum Piezas {
                             tablero[filaO][columnaO].putClientProperty("Tipo", null);
                             tablero[filaO][columnaO].setIcon(null);
                             tabla.limpiarColores(tablero);
-                            
-                             for (int x = 0; x < 6; x++) {
-                                for (int y = 0; y < 6; y++) {
-                                    for (var al : tablero[x][y].getActionListeners()) {
-                                        tablero[x][y].removeActionListener(al);
-                                    }
-                                    tablero[x][y].addActionListener(tabla);
-                                }
-                            }
+                            seMovio = true;
                             
                         });
                     }
@@ -84,32 +86,67 @@ public enum Piezas {
         
         fila = (int) casilla.getClientProperty("Fila");
         columna = (int) casilla.getClientProperty("Columna");
-         
+         Pieza sujeto = (Pieza) tablero[fila][columna].getClientProperty("Tipo");
         for(int i =fila-radioAtaque; i <= fila + radioAtaque ; i++)
         {
             for(int j =columna -radioAtaque; j <= columna + radioAtaque;j++)
             {
                  
                 if(i >= 0 && i < 6 && j >= 0 && j < 6  && !(fila == i&&columna==j)){
+                     
                     Pieza enemigo = (Pieza) tablero[i][j].getClientProperty("Tipo");
                     String enemigos = (String) tablero[i][j].getClientProperty("equipo");
                     String aliados = (String) tablero[fila][columna].getClientProperty("equipo");
-                    if(enemigo!=null && !aliados.equals(enemigos)){
+                    
+                    if(enemigo!=null &&  !aliados.equals(enemigos) ){
                         tablero[i][j].setBackground(Color.RED);
                         int f = i, c = j;
 
                         tablero[i][j].addActionListener(e -> {
-                            enemigo.RecibirDanio(this.ataque);
+                            
+
+                            if (sujeto instanceof Vampiro && sujeto.chupar){
+                                sujeto.RecibirDanio(1, true);
+                                enemigo.RecibirDanio(1, false);
+                            }
+                            else if(f<fila-1 || f>fila+1 || c<columna-1 || c>columna+1){
+                                enemigo.RecibirDanio(this.ataque/2, true);
+                                
+                            }else
+                                enemigo.RecibirDanio(this.ataque, false);
                             System.out.println("Escudo restante del enemigo: " + enemigo.getEscudo());
                             System.out.println("Salud restante del enemigo: " + enemigo.getSalud());
                             if (!enemigo.estaViva()) {
-                                tablero[f][c].putClientProperty("Tipo", null);
-                                tablero[f][c].putClientProperty("equipo", null);        
-                                tablero[f][c].setIcon(null);
+                                JButton boton = tablero[f][c];
+                                String muerto = boton.getClientProperty("equipo").toString();
+                                if(muerto.equals("blanco")){
+                                    blancos--;
+                                }
+                                else{
+                                    negros--;  
+                                }
+                                if (enemigo instanceof Muerte) {
+                                    
+                                    Tablero.limpiarMuerteSeleccionada((Muerte) enemigo);
+                                }else if(enemigo instanceof Zombie){
+                                    Zombie z = (Zombie) enemigo;
+                                    Muerte dueña = (Muerte) boton.getClientProperty("duenaMuerte");
+                                    dueña.eliminarZombie(boton);
+                                }
+                              
+                                boton.putClientProperty("Tipo", null);
+                                boton.putClientProperty("equipo", null);        
+                                boton.setIcon(null);
+                                
+                                
+
                                 System.out.println("El enemigo ha muerto en (" + f + ", " + c + ")");
+                                
                             }
-                            
+                            tabla.limpiarColores(tablero);
                             tablero[f][c].removeActionListener(tabla);
+                            seMovio = true;
+                            
                         });
                         
                     }
