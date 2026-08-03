@@ -26,7 +26,7 @@ public class ruleta extends JPanel implements ActionListener {
     }
 
     private static final int SECTORES = 6;
-    private final JButton botonGirar = new JButton("Girar");
+    private final JButton botonGirar = RecursosVisuales.crearBoton("Girar");
     private final JLabel resultadoLabel =
             new JLabel("Presiona para girar", SwingConstants.CENTER);
     private final Random random = new Random();
@@ -42,10 +42,12 @@ public class ruleta extends JPanel implements ActionListener {
 
     public ruleta() {
         setPreferredSize(new Dimension(440, 500));
-        setBackground(Color.WHITE);
+        setBackground(RecursosVisuales.FONDO_GOTICO);
+        setOpaque(true);
         setLayout(new BorderLayout());
         botonGirar.setFont(new Font("Arial", Font.BOLD, 18));
         resultadoLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        resultadoLabel.setForeground(RecursosVisuales.TEXTO_MARFIL);
         add(resultadoLabel, BorderLayout.NORTH);
         add(botonGirar, BorderLayout.SOUTH);
         cargarImagenes();
@@ -117,8 +119,8 @@ public class ruleta extends JPanel implements ActionListener {
         g.rotate(Math.toRadians(anguloActual));
         double anguloSector = 360.0 / SECTORES;
         for (int i = 0; i < SECTORES; i++) {
-            g.setColor(i % 2 == 0 ? new Color(240, 240, 240)
-                    : new Color(200, 200, 200));
+            g.setColor(i % 2 == 0 ? Color.WHITE
+                    : new Color(205, 210, 218));
             int inicio = (int) Math.round(i * anguloSector);
             g.fillArc(-radio, -radio, tamano, tamano, inicio,
                     (int) Math.ceil(anguloSector));
@@ -128,12 +130,12 @@ public class ruleta extends JPanel implements ActionListener {
             int y = (int) (radio * 0.55 * Math.sin(-medio));
             g.drawImage(icono.getImage(), x - 36, y - 36, 72, 72, this);
         }
-        g.setColor(Color.BLACK);
+        g.setColor(new Color(35, 38, 45));
         g.setStroke(new BasicStroke(3));
         g.drawOval(-radio, -radio, tamano, tamano);
         g.dispose();
 
-        grafico.setColor(Color.RED);
+        grafico.setColor(new Color(170, 25, 40));
         int centro = getWidth() / 2;
         int superior = (getHeight() - tamano) / 2;
         int[] x = {centro - 10, centro + 10, centro};

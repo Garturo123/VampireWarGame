@@ -6,6 +6,8 @@ El código que compila NetBeans se encuentra en `src/vampireswargame`.
 
 - Herencia y polimorfismo: `Pieza` es la base de `Vampiro`, `Lobo`,
   `Muerte` y `Zombie`. El tablero trabaja con referencias `Pieza`.
+- Herencia entre clases concretas: `Usuario` es la clase padre normal y
+  `Jugador` es su clase hija normal; hereda nombre, fecha y estado de cuenta.
 - Clase y método abstractos: `Pieza` y sus métodos `getNombre()` y
   `Habilidad(Pieza)`.
 - Clases y métodos finales: `Lobo`, `Muerte`, `Zombie`, `MiCuenta`,

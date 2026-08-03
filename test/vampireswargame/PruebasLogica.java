@@ -19,6 +19,11 @@ public final class PruebasLogica {
     private static void probarEstructuraOrientadaAObjetos() throws Exception {
         exigir(Modifier.isAbstract(Pieza.class.getModifiers()),
                 "Pieza debe ser abstracta.");
+        exigir(!Modifier.isAbstract(Usuario.class.getModifiers()),
+                "Usuario debe ser una clase padre concreta.");
+        exigir(Jugador.class.getSuperclass() == Usuario.class
+                        && !Modifier.isAbstract(Jugador.class.getModifiers()),
+                "Jugador debe ser una clase hija concreta de Usuario.");
         exigir(Modifier.isFinal(Lobo.class.getModifiers()),
                 "Lobo debe ser final.");
         exigir(Modifier.isFinal(Pieza.class

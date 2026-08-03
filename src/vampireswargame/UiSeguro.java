@@ -22,6 +22,7 @@ public final class UiSeguro {
     }
 
     public static final void iniciarAplicacion() {
+        RecursosVisuales.inicializarTemaGlobal();
         Thread.setDefaultUncaughtExceptionHandler(
                 (hilo, error) -> mostrarError(null, error));
         SwingUtilities.invokeLater(() -> ejecutar(null, () -> {

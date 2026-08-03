@@ -10,10 +10,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-public class opciones extends JPanel {
+public class opciones extends PanelFondoGotico {
     private final ruleta suerte = new ruleta();
     private final JLabel mensajero = new JLabel("", SwingConstants.CENTER);
-    private final JButton rendirse = new JButton("Retirarse");
+    private final JButton rendirse = RecursosVisuales.crearBoton("Retirarse");
 
     public opciones() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -23,6 +23,7 @@ public class opciones extends JPanel {
         suerte.setAlignmentX(Component.CENTER_ALIGNMENT);
         rendirse.setAlignmentX(Component.CENTER_ALIGNMENT);
         limpiar();
+        RecursosVisuales.aplicarTema(this);
     }
 
     public ruleta getRuleta() {

@@ -1,27 +1,15 @@
 package vampireswargame;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-public class Jugador {
-    private static final DateTimeFormatter FORMATO_FECHA =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-    private final String userName;
+/** Clase hija concreta que añade contraseña, puntos y lógica de juego. */
+public class Jugador extends Usuario {
     private String password;
     private int ranking;
-    private final LocalDateTime fechaIngreso;
-    private boolean activo;
 
     public Jugador(String userName, String password) throws ValidacionException {
-        String nombreLimpio = userName == null ? "" : userName.trim();
-        validarNombre(nombreLimpio);
+        super(validarNombre(userName));
         validarPassword(password);
-        this.userName = nombreLimpio;
         this.password = password;
         this.ranking = 0;
-        this.fechaIngreso = LocalDateTime.now();
-        this.activo = true;
     }
 
     public static Jugador registrar(String nombre, String password)
@@ -46,10 +34,12 @@ public class Jugador {
         return jugador;
     }
 
-    private static void validarNombre(String nombre) throws ValidacionException {
-        if (nombre == null || nombre.isBlank()) {
+    private static String validarNombre(String nombre) throws ValidacionException {
+        String nombreLimpio = nombre == null ? "" : nombre.trim();
+        if (nombreLimpio.isBlank()) {
             throw new ValidacionException("Debe ingresar un nombre de usuario.");
         }
+        return nombreLimpio;
     }
 
     private static void validarPassword(String password) throws ValidacionException {
@@ -71,10 +61,6 @@ public class Jugador {
         password = nueva;
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
     public int getRanking() {
         return ranking;
     }
@@ -83,20 +69,4 @@ public class Jugador {
         ranking += 3;
     }
 
-    public String getFechaIngresoFormateada() {
-        return fechaIngreso.format(FORMATO_FECHA);
-    }
-
-    public boolean isActivo() {
-        return activo;
-    }
-
-    public void cerrarCuenta() {
-        activo = false;
-    }
-
-    @Override
-    public String toString() {
-        return userName;
-    }
 }

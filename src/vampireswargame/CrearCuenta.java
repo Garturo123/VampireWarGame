@@ -18,12 +18,12 @@ public class CrearCuenta extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel formulario = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel formulario = new PanelFondoGotico(new GridLayout(3, 2, 10, 10));
         formulario.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         JTextField usuario = new JTextField();
         JPasswordField password = new JPasswordField();
-        JButton crear = new JButton("Crear");
-        JButton cancelar = new JButton("Cancelar");
+        JButton crear = RecursosVisuales.crearBoton("Crear");
+        JButton cancelar = RecursosVisuales.crearBoton("Cancelar");
 
         formulario.add(new JLabel("Nombre de usuario:"));
         formulario.add(usuario);
@@ -32,6 +32,7 @@ public class CrearCuenta extends JFrame {
         formulario.add(crear);
         formulario.add(cancelar);
         add(formulario, BorderLayout.CENTER);
+        RecursosVisuales.aplicarTema(formulario);
 
         crear.addActionListener(e -> UiSeguro.ejecutar(this, () -> {
             try {

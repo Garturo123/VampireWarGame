@@ -16,17 +16,23 @@ public class reportes extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        PanelFondoGotico fondo = new PanelFondoGotico(new BorderLayout());
+        fondo.setBorder(javax.swing.BorderFactory.createEmptyBorder(
+                14, 14, 14, 14));
+        setContentPane(fondo);
+
         JTabbedPane pestanas = new JTabbedPane();
         pestanas.addTab("Ranking de jugadores", crearRanking());
         pestanas.addTab("Historial de mis últimos juegos", crearHistorial());
-        add(pestanas, BorderLayout.CENTER);
+        fondo.add(pestanas, BorderLayout.CENTER);
 
-        JButton volver = new JButton("Volver");
+        JButton volver = RecursosVisuales.crearBoton("Volver");
         volver.addActionListener(e -> UiSeguro.ejecutar(this, () -> {
             dispose();
             new MenuPrincipal().setVisible(true);
         }));
-        add(volver, BorderLayout.SOUTH);
+        fondo.add(volver, BorderLayout.SOUTH);
+        RecursosVisuales.aplicarTema(fondo);
     }
 
     private JScrollPane crearRanking() {

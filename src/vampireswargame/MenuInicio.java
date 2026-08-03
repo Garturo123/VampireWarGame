@@ -16,16 +16,16 @@ public class MenuInicio extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
+        JPanel panel = new PanelFondoGotico();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(RecursosVisuales.FONDO_GOTICO);
         panel.setBorder(BorderFactory.createEmptyBorder(12, 30, 24, 30));
 
         JLabel logo = RecursosVisuales.crearLogo(600, 300);
 
-        JButton iniciarSesion = new JButton("Iniciar sesión");
-        JButton crearJugador = new JButton("Crear jugador");
-        JButton salir = new JButton("Salir");
+        JButton iniciarSesion = RecursosVisuales.crearBoton("Iniciar sesión");
+        JButton crearJugador = RecursosVisuales.crearBoton("Crear jugador");
+        JButton salir = RecursosVisuales.crearBoton("Salir");
         JButton[] botones = {iniciarSesion, crearJugador, salir};
         for (JButton boton : botones) {
             boton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -41,6 +41,7 @@ public class MenuInicio extends JFrame {
         panel.add(salir);
         panel.add(Box.createVerticalGlue());
         add(panel);
+        RecursosVisuales.aplicarTema(panel);
 
         iniciarSesion.addActionListener(e -> UiSeguro.ejecutar(this, () -> {
             dispose();

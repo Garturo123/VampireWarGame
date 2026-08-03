@@ -17,12 +17,12 @@ public class IngresarSecion extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel formulario = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel formulario = new PanelFondoGotico(new GridLayout(3, 2, 10, 10));
         formulario.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         JTextField usuario = new JTextField();
         JPasswordField password = new JPasswordField();
-        JButton ingresar = new JButton("Ingresar");
-        JButton cancelar = new JButton("Cancelar");
+        JButton ingresar = RecursosVisuales.crearBoton("Ingresar");
+        JButton cancelar = RecursosVisuales.crearBoton("Cancelar");
 
         formulario.add(new JLabel("Nombre de usuario:"));
         formulario.add(usuario);
@@ -31,6 +31,7 @@ public class IngresarSecion extends JFrame {
         formulario.add(ingresar);
         formulario.add(cancelar);
         add(formulario);
+        RecursosVisuales.aplicarTema(formulario);
 
         ingresar.addActionListener(e -> UiSeguro.ejecutar(this, () -> {
             try {

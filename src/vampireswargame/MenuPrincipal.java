@@ -20,7 +20,7 @@ public class MenuPrincipal extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
+        JPanel panel = new PanelFondoGotico();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(RecursosVisuales.FONDO_GOTICO);
         panel.setBorder(BorderFactory.createEmptyBorder(12, 35, 24, 35));
@@ -30,10 +30,10 @@ public class MenuPrincipal extends JFrame {
         bienvenida.setAlignmentX(Component.CENTER_ALIGNMENT);
         bienvenida.setForeground(RecursosVisuales.TEXTO_MARFIL);
         bienvenida.setFont(new Font("Serif", Font.BOLD, 18));
-        JButton jugar = new JButton("Nueva partida");
-        JButton miCuenta = new JButton("Mi cuenta");
-        JButton reportes = new JButton("Reportes");
-        JButton cerrarSesion = new JButton("Cerrar sesión");
+        JButton jugar = RecursosVisuales.crearBoton("Nueva partida");
+        JButton miCuenta = RecursosVisuales.crearBoton("Mi cuenta");
+        JButton reportes = RecursosVisuales.crearBoton("Reportes");
+        JButton cerrarSesion = RecursosVisuales.crearBoton("Cerrar sesión");
         JButton[] botones = {jugar, miCuenta, reportes, cerrarSesion};
         for (JButton boton : botones) {
             boton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -49,6 +49,7 @@ public class MenuPrincipal extends JFrame {
         }
         panel.add(Box.createVerticalGlue());
         add(panel);
+        RecursosVisuales.aplicarTema(panel);
 
         jugar.addActionListener(e -> UiSeguro.ejecutar(this, this::iniciarPartida));
         miCuenta.addActionListener(e -> UiSeguro.ejecutar(this, () -> {

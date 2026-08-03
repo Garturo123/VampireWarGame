@@ -18,14 +18,14 @@ public final class MiCuenta extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel contenido = new JPanel(new GridLayout(8, 2, 8, 8));
+        JPanel contenido = new PanelFondoGotico(new GridLayout(8, 2, 8, 8));
         contenido.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         JPasswordField actual = new JPasswordField();
         JPasswordField nueva = new JPasswordField();
         JPasswordField confirmacion = new JPasswordField();
-        JButton cambiar = new JButton("Cambiar contraseña");
-        JButton cerrarCuenta = new JButton("Cerrar mi cuenta");
-        JButton volver = new JButton("Volver");
+        JButton cambiar = RecursosVisuales.crearBoton("Cambiar contraseña");
+        JButton cerrarCuenta = RecursosVisuales.crearBoton("Cerrar mi cuenta");
+        JButton volver = RecursosVisuales.crearBoton("Volver");
 
         contenido.add(new JLabel("Usuario:"));
         contenido.add(new JLabel(jugador.getUserName()));
@@ -43,6 +43,7 @@ public final class MiCuenta extends JFrame {
         contenido.add(cerrarCuenta);
         contenido.add(volver);
         add(contenido, BorderLayout.CENTER);
+        RecursosVisuales.aplicarTema(contenido);
 
         cambiar.addActionListener(e -> UiSeguro.ejecutar(this, () -> {
             try {
