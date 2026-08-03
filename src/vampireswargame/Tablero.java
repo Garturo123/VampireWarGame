@@ -2,286 +2,724 @@ package vampireswargame;
 
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Image;
+import java.net.URL;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import static vampireswargame.Piezas.blancos;
-import static vampireswargame.Piezas.negros;
+import javax.swing.border.Border;
 
-/**
- *
- * @author gaat1
- */
-public class Tablero extends JPanel implements ActionListener{
-    private static JButton[][] botones = new JButton[6][6];
-    private ruleta suerte;
-    private opciones panel;
-    public static boolean TurnoBlanco = false;
-    private static Muerte muerteSeleccionada = null;
+public class Tablero extends JPanel {
+    private static final int TAMANO = 6;
+    private static final Border BORDE_NORMAL =
+            BorderFactory.createLineBorder(Color.GRAY);
+    private static final Border BORDE_SELECCION =
+            BorderFactory.createLineBorder(Color.YELLOW, 4);
+    private static final Border BORDE_GRUPO =
+            BorderFactory.createLineBorder(new Color(255, 170, 35), 3);
 
-    private static JFrame juego;
-    
-    public static void terminarJuego(){
-         if(blancos == 0 || negros == 0){
-             if(blancos == 0)
-                JOptionPane.showMessageDialog(null, "Victoria del equipo negro.");
-             else
-                JOptionPane.showMessageDialog(null, "Victoria del equipo blanco."); 
-            SwingUtilities.invokeLater(()->{
-                MenuPrincipal principal = new MenuPrincipal();
-                juego.dispose();
-                principal.setVisible(true);
-            });
-        }
-    }
-    public static Piezas PiezaTipo (Piezas tipo) {
-        
-        return tipo;
-    }
-    
-    public Tablero(opciones panel, JFrame juego){
+    private final CasillaTablero[][] botones =
+            new CasillaTablero[TAMANO][TAMANO];
+    private final Pieza[][] piezas = new Pieza[TAMANO][TAMANO];
+    private final opciones panel;
+    private final JFrame ventana;
+    private final Jugador jugadorBlanco;
+    private final Jugador jugadorNegro;
+    private boolean turnoBlanco = true;
+    private boolean partidaFinalizada;
+    private String tipoAutorizado = "";
+    private int girosUtilizados;
+    private int filaOrigen = -1;
+    private int columnaOrigen = -1;
+    private Muerte muerteActiva;
+
+    public Tablero(opciones panel, JFrame ventana, Jugador jugadorBlanco,
+            Jugador jugadorNegro) {
         this.panel = panel;
-        this.juego = juego;
-        suerte = panel.getRuleta();
-        suerte.setRuletaListener(new ruleta.RuletaListener() {
-            @Override
-            public void onRuletaFinalizada(String resultado) {
-                TurnoBlanco = !TurnoBlanco; 
-                
-                Piezas.seMovio = false;  // ahora el jugador puede mover
-                panel.setMensaje("Turno del equipo: " + (TurnoBlanco ? "blanco" : "negro"));
-            }
-        });
-        
-        
-        this.setLayout(new GridLayout(6,6));
-        boolean blancoUltimo = false;
-        
-        for (int Fila = 0; Fila < 6; Fila++){
-            
-            for(int Columna = 0; Columna < 6;Columna++){
-                botones[Fila][Columna] = new JButton();
-                botones[Fila][Columna].putClientProperty("Tipo", null);
-                botones[Fila][Columna].putClientProperty("equipo", null);
-                //Negras
-                if(Fila == 0){
-                    switch(Columna){
-                        case 1, 4 -> {
-                            botones[Fila][Columna]= new BotonEscalable(new ImageIcon(getClass().getResource("/vampireswargame/imagenes/VampiroNegro.png")));
-                            botones[Fila][Columna].putClientProperty("Tipo", new Vampiro());
-                        }
-                        case 0, 5 -> {
-                            botones[Fila][Columna]= new BotonEscalable(new ImageIcon(getClass().getResource("/vampireswargame/imagenes/LoboNegro.png")));
-                            botones[Fila][Columna].putClientProperty("Tipo", new Lobo());
-                        }
-                        case 2, 3 -> {
-                            botones[Fila][Columna]= new BotonEscalable(new ImageIcon(getClass().getResource("/vampireswargame/imagenes/MuerteNegro.png")));
-                            botones[Fila][Columna].putClientProperty("Tipo", new Muerte());
-                        }
-                    }
-                    botones[Fila][Columna].putClientProperty("equipo", "negro");
-                }
-                //Blancas
-                if(Fila == 5){
-                    switch (Columna){
-                        case 1, 4 -> {
-                            botones[Fila][Columna]= new BotonEscalable(new ImageIcon(getClass().getResource("/vampireswargame/imagenes/VampiroBlanco.png")));
-                            botones[Fila][Columna].putClientProperty("Tipo", new Vampiro());
-                        }
-                        case 0, 5 -> {
-                            botones[Fila][Columna]= new BotonEscalable(new ImageIcon(getClass().getResource("/vampireswargame/imagenes/LoboBlanco.png")));
-                            botones[Fila][Columna].putClientProperty("Tipo", new Lobo());
-                        }
-                        case 2, 3 -> {
-                            botones[Fila][Columna]= new BotonEscalable(new ImageIcon(getClass().getResource("/vampireswargame/imagenes/MuerteBlanco.png")));
-                            botones[Fila][Columna].putClientProperty("Tipo", new Muerte());
-                        }
-                    }
-                    botones[Fila][Columna].putClientProperty("equipo", "blanco");
-                }
-                
-                botones[Fila][Columna].putClientProperty("Fila", Fila);
-                botones[Fila][Columna].putClientProperty("Columna", Columna);
-                
-                botones[Fila][Columna].addActionListener(this);
-                this.revalidate();
-                this.repaint();
-                
-                //Fondo
-                if(blancoUltimo == false){
-                    botones[Fila][Columna].setBackground(Color.white);
-                    blancoUltimo = true;
-                    
-                }
-                else{
-                    botones[Fila][Columna].setBackground(Color.DARK_GRAY);
-                    blancoUltimo = false;
-                }
-                add(botones[Fila][Columna]);
-                
-            }
-            blancoUltimo = !blancoUltimo;
-            
-        }
-       
+        this.ventana = ventana;
+        this.jugadorBlanco = jugadorBlanco;
+        this.jugadorNegro = jugadorNegro;
+        setLayout(new GridLayout(TAMANO, TAMANO));
+        construirCasillas();
+        colocarPiezasIniciales();
+        panel.getRuleta().setRuletaListener(resultado ->
+                UiSeguro.ejecutar(this, () -> procesarRuleta(resultado)));
+        panel.setAccionRetiro(this::confirmarRetiro);
+        prepararTurno();
     }
-    public static boolean hayPiezaDisponible(String tipo, String equipo) {
-        if (tipo == null || equipo == null) return false;
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                Object tipoObj = botones[i][j].getClientProperty("Tipo");
-                String equipoBtn = (String) botones[i][j].getClientProperty("equipo");
 
-                if (tipoObj instanceof Pieza && equipoBtn != null && equipoBtn.equalsIgnoreCase(equipo)) {
-                    Pieza p = (Pieza) tipoObj;
-                    String nombrePieza = p.getNombre();
-                    if (nombrePieza != null && nombrePieza.equalsIgnoreCase(tipo) && p.getSalud() > 0) {
-                        return true;
+    private void construirCasillas() {
+        for (int fila = 0; fila < TAMANO; fila++) {
+            for (int columna = 0; columna < TAMANO; columna++) {
+                CasillaTablero boton = new CasillaTablero();
+                boton.setBorder(BORDE_NORMAL);
+                int f = fila;
+                int c = columna;
+                boton.addActionListener(e ->
+                        UiSeguro.ejecutar(this, () -> seleccionarCasilla(f, c)));
+                botones[fila][columna] = boton;
+                add(boton);
+            }
+        }
+        actualizarTablero();
+    }
+
+    private void colocarPiezasIniciales() {
+        for (int columna = 0; columna < TAMANO; columna++) {
+            piezas[0][columna] = crearPiezaInicial(columna, "negro");
+            piezas[5][columna] = crearPiezaInicial(columna, "blanco");
+        }
+        actualizarTablero();
+    }
+
+    private Pieza crearPiezaInicial(int columna, String equipo) {
+        Pieza pieza;
+        switch (columna) {
+            case 0, 5 -> pieza = new Lobo();
+            case 1, 4 -> pieza = new Vampiro();
+            case 2, 3 -> pieza = new Muerte();
+            default -> throw new IllegalArgumentException("Columna inválida.");
+        }
+        pieza.setEquipo(equipo);
+        return pieza;
+    }
+
+    private void procesarRuleta(String resultado) {
+        if (partidaFinalizada) {
+            return;
+        }
+        girosUtilizados++;
+        String equipo = equipoActual();
+        if (hayPiezaDisponible(resultado, equipo)) {
+            tipoAutorizado = resultado;
+            panel.getRuleta().setBotonGirarEnabled(false);
+            panel.setMensaje("Turno de <b>" + jugadorActual().getUserName()
+                    + "</b> (" + equipo + "). Seleccione una pieza "
+                    + resultado + ".");
+            return;
+        }
+
+        int maximo = girosPermitidos(equipo);
+        if (girosUtilizados < maximo) {
+            panel.getRuleta().prepararGiro(
+                    "No quedan " + resultado + ". Gira otra vez ("
+                    + (maximo - girosUtilizados) + " intento(s)).");
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "No quedan piezas de tipo " + resultado
+                    + " y se agotaron los giros. Se pierde el turno.");
+            cambiarTurno();
+        }
+    }
+
+    private void seleccionarCasilla(int fila, int columna) {
+        if (partidaFinalizada) {
+            return;
+        }
+        if (tipoAutorizado.isBlank()) {
+            JOptionPane.showMessageDialog(this,
+                    "Primero debe girar la ruleta.");
+            return;
+        }
+        if (filaOrigen < 0) {
+            seleccionarOrigen(fila, columna);
+        } else if (filaOrigen == fila && columnaOrigen == columna
+                && muerteActiva == null) {
+            limpiarSeleccion();
+            panel.setMensaje("Selección cancelada. Elija otra pieza "
+                    + tipoAutorizado + ".");
+        } else {
+            seleccionarDestino(fila, columna);
+        }
+    }
+
+    private void seleccionarOrigen(int fila, int columna) {
+        Pieza pieza = piezas[fila][columna];
+        if (pieza == null) {
+            JOptionPane.showMessageDialog(this, "La casilla está vacía.");
+            return;
+        }
+        if (!equipoActual().equals(pieza.getEquipo())) {
+            JOptionPane.showMessageDialog(this,
+                    "La pieza pertenece al oponente.");
+            return;
+        }
+        if (!tipoAutorizado.equals(pieza.getNombre())) {
+            JOptionPane.showMessageDialog(this,
+                    "La ruleta permite mover una pieza " + tipoAutorizado + ".");
+            return;
+        }
+        filaOrigen = fila;
+        columnaOrigen = columna;
+        if (pieza instanceof Muerte muerte) {
+            muerteActiva = muerte;
+            panel.setMensaje("Muerte y Zombies vinculados seleccionados. "
+                    + "Elija una casilla para mover o invocar, o seleccione "
+                    + "uno de sus Zombies para utilizarlo.");
+        } else {
+            panel.setMensaje("Pieza seleccionada. Elija una casilla celeste "
+                    + "para mover o una roja para atacar.");
+        }
+        mostrarDestinosDisponibles();
+    }
+
+    private void seleccionarDestino(int fila, int columna) {
+        Pieza atacante = piezas[filaOrigen][columnaOrigen];
+        Pieza destino = piezas[fila][columna];
+        if (atacante == null) {
+            limpiarSeleccion();
+            return;
+        }
+        if (muerteActiva != null && esIntegranteMuerteActiva(destino)) {
+            seleccionarIntegranteMuerte(fila, columna);
+            return;
+        }
+        if (filaOrigen == fila && columnaOrigen == columna) {
+            mostrarDestinosDisponibles();
+            return;
+        }
+        if (destino == null) {
+            procesarCasillaVacia(atacante, fila, columna);
+        } else if (atacante.getEquipo().equals(destino.getEquipo())) {
+            JOptionPane.showMessageDialog(this,
+                    "No puede moverse ni atacar una pieza propia.");
+        } else {
+            procesarAtaque(atacante, destino, fila, columna);
+        }
+    }
+
+    private boolean esIntegranteMuerteActiva(Pieza pieza) {
+        if (pieza == null || muerteActiva == null) {
+            return false;
+        }
+        if (pieza == muerteActiva) {
+            return true;
+        }
+        return pieza instanceof Zombie zombie
+                && zombie.getDuena() == muerteActiva
+                && muerteActiva.getEquipo().equals(zombie.getEquipo());
+    }
+
+    private void seleccionarIntegranteMuerte(int fila, int columna) {
+        filaOrigen = fila;
+        columnaOrigen = columna;
+        Pieza seleccionada = piezas[fila][columna];
+        if (seleccionada instanceof Zombie) {
+            panel.setMensaje("Zombie de la Muerte seleccionado. Puede moverlo "
+                    + "a una casilla celeste o atacar una casilla roja.");
+        } else {
+            panel.setMensaje("Muerte seleccionada. Las casillas amarillas "
+                    + "permiten invocar y las celestes permiten moverse.");
+        }
+        mostrarDestinosDisponibles();
+    }
+
+    private void mostrarDestinosDisponibles() {
+        limpiarIndicadoresVisuales();
+        if (!dentro(filaOrigen, columnaOrigen)) {
+            return;
+        }
+        Pieza atacante = piezas[filaOrigen][columnaOrigen];
+        if (atacante == null) {
+            return;
+        }
+
+        marcarGrupoMuerte();
+        botones[filaOrigen][columnaOrigen].setBorder(BORDE_SELECCION);
+
+        for (int fila = 0; fila < TAMANO; fila++) {
+            for (int columna = 0; columna < TAMANO; columna++) {
+                if (fila == filaOrigen && columna == columnaOrigen) {
+                    continue;
+                }
+                Pieza destino = piezas[fila][columna];
+                if (destino == null) {
+                    boolean puedeMover = puedeMover(atacante, filaOrigen,
+                            columnaOrigen, fila, columna);
+                    if (atacante instanceof Muerte) {
+                        botones[fila][columna].setDestacado(puedeMover
+                                ? CasillaTablero.Destacado.MOVIMIENTO_INVOCACION
+                                : CasillaTablero.Destacado.INVOCACION);
+                    } else if (puedeMover) {
+                        botones[fila][columna].setDestacado(
+                                CasillaTablero.Destacado.MOVIMIENTO);
                     }
+                } else if (!atacante.getEquipo().equals(destino.getEquipo())
+                        && puedeAtacar(atacante, filaOrigen, columnaOrigen,
+                                fila, columna)) {
+                    botones[fila][columna].setDestacado(
+                            CasillaTablero.Destacado.ATAQUE);
+                }
+            }
+        }
+        repaint();
+    }
+
+    private void marcarGrupoMuerte() {
+        if (muerteActiva == null) {
+            return;
+        }
+        for (int fila = 0; fila < TAMANO; fila++) {
+            for (int columna = 0; columna < TAMANO; columna++) {
+                if (esIntegranteMuerteActiva(piezas[fila][columna])) {
+                    botones[fila][columna].setBorder(BORDE_GRUPO);
+                }
+            }
+        }
+    }
+
+    private boolean puedeAtacar(Pieza atacante, int origenF, int origenC,
+            int destinoF, int destinoC) {
+        int distanciaF = Math.abs(destinoF - origenF);
+        int distanciaC = Math.abs(destinoC - origenC);
+        int distancia = Math.max(distanciaF, distanciaC);
+        if (distancia == 1) {
+            return true;
+        }
+        if (!(atacante instanceof Muerte muerte)) {
+            return false;
+        }
+        if (esLanzaValida(origenF, origenC, destinoF, destinoC)) {
+            return true;
+        }
+        return distancia > 2 && buscarZombieAdyacente(
+                destinoF, destinoC, atacante.getEquipo(), muerte) != null;
+    }
+
+    private void procesarCasillaVacia(Pieza atacante, int fila, int columna) {
+        boolean movimientoValido = puedeMover(
+                atacante, filaOrigen, columnaOrigen, fila, columna);
+        if (atacante instanceof Muerte) {
+            String[] opcionesAccion = movimientoValido
+                    ? new String[]{"Mover", "Invocar Zombie", "Cancelar"}
+                    : new String[]{"Invocar Zombie", "Cancelar"};
+            int eleccion = JOptionPane.showOptionDialog(
+                    this,
+                    "¿Qué acción desea ejecutar?",
+                    "Habilidad del Necrómante",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    opcionesAccion,
+                    opcionesAccion[0]);
+            if (eleccion < 0 || "Cancelar".equals(opcionesAccion[eleccion])) {
+                return;
+            }
+            if ("Invocar Zombie".equals(opcionesAccion[eleccion])) {
+                invocarZombie((Muerte) atacante, fila, columna);
+            } else {
+                moverPieza(fila, columna);
+            }
+            return;
+        }
+        if (!movimientoValido) {
+            JOptionPane.showMessageDialog(this, mensajeMovimiento(atacante));
+            return;
+        }
+        moverPieza(fila, columna);
+    }
+
+    private String mensajeMovimiento(Pieza pieza) {
+        if (pieza instanceof Lobo) {
+            return "El Hombre Lobo solo puede avanzar hasta 2 casillas "
+                    + "en línea horizontal, vertical o diagonal, sin obstáculos.";
+        }
+        return "La pieza solo puede avanzar a una casilla adyacente vacía.";
+    }
+
+    private boolean puedeMover(Pieza pieza, int origenF, int origenC,
+            int destinoF, int destinoC) {
+        if (pieza == null || pieza.getMovilidad() == 0
+                || piezas[destinoF][destinoC] != null) {
+            return false;
+        }
+        int deltaF = destinoF - origenF;
+        int deltaC = destinoC - origenC;
+        int distanciaF = Math.abs(deltaF);
+        int distanciaC = Math.abs(deltaC);
+        boolean direccionValida = deltaF == 0 || deltaC == 0
+                || distanciaF == distanciaC;
+        int distancia = Math.max(distanciaF, distanciaC);
+        if (!direccionValida || distancia == 0
+                || distancia > pieza.getMovilidad()) {
+            return false;
+        }
+        if (distancia == 2) {
+            int intermediaF = origenF + Integer.signum(deltaF);
+            int intermediaC = origenC + Integer.signum(deltaC);
+            return piezas[intermediaF][intermediaC] == null;
+        }
+        return true;
+    }
+
+    private void moverPieza(int fila, int columna) {
+        Pieza pieza = piezas[filaOrigen][columnaOrigen];
+        piezas[fila][columna] = pieza;
+        piezas[filaOrigen][columnaOrigen] = null;
+        actualizarTablero();
+        panel.setMensaje("Se movió la pieza " + pieza.getNombre() + ".");
+        finalizarAccion();
+    }
+
+    private void invocarZombie(Muerte muerte, int fila, int columna) {
+        Zombie zombie = new Zombie(muerte);
+        zombie.setEquipo(muerte.getEquipo());
+        piezas[fila][columna] = zombie;
+        actualizarTablero();
+        panel.setMensaje("Se invocó un Zombie en la casilla seleccionada.");
+        finalizarAccion();
+    }
+
+    private void procesarAtaque(Pieza atacante, Pieza objetivo,
+            int filaObjetivo, int columnaObjetivo) {
+        int distanciaF = Math.abs(filaObjetivo - filaOrigen);
+        int distanciaC = Math.abs(columnaObjetivo - columnaOrigen);
+        boolean adyacente = Math.max(distanciaF, distanciaC) == 1;
+
+        if (adyacente) {
+            if (atacante instanceof Vampiro) {
+                String[] acciones = {"Ataque normal", "Absorber sangre", "Cancelar"};
+                int opcion = elegirAtaque(acciones);
+                if (opcion == 0) {
+                    ejecutarAtaque(atacante, objetivo, filaObjetivo,
+                            columnaObjetivo, "ataque normal", null);
+                } else if (opcion == 1) {
+                    ejecutarAtaque(atacante, objetivo, filaObjetivo,
+                            columnaObjetivo, "absorción de sangre", atacante);
+                }
+                return;
+            }
+            ejecutarAtaque(atacante, objetivo, filaObjetivo,
+                    columnaObjetivo, "ataque normal", null);
+            return;
+        }
+
+        if (atacante instanceof Muerte) {
+            boolean lanzaValida = esLanzaValida(
+                    filaOrigen, columnaOrigen, filaObjetivo, columnaObjetivo);
+            if (lanzaValida) {
+                ejecutarAtaque(atacante, objetivo, filaObjetivo,
+                        columnaObjetivo, "ataque con lanza", atacante);
+                return;
+            }
+            int distancia = Math.max(distanciaF, distanciaC);
+            Pieza zombie = distancia > 2
+                    ? buscarZombieAdyacente(
+                            filaObjetivo, columnaObjetivo,
+                            atacante.getEquipo(), (Muerte) atacante)
+                    : null;
+            if (zombie != null) {
+                ejecutarAtaque(atacante, objetivo, filaObjetivo,
+                        columnaObjetivo, "ataque mediante Zombie", zombie);
+                return;
+            }
+        }
+        JOptionPane.showMessageDialog(this,
+                "La pieza enemiga está fuera del alcance permitido.");
+    }
+
+    private int elegirAtaque(String[] acciones) {
+        return JOptionPane.showOptionDialog(
+                this,
+                "Seleccione el tipo de ataque:",
+                "Combate",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                acciones,
+                acciones[0]);
+    }
+
+    private boolean esLanzaValida(int origenF, int origenC,
+            int destinoF, int destinoC) {
+        int deltaF = Math.abs(destinoF - origenF);
+        int deltaC = Math.abs(destinoC - origenC);
+        boolean distanciaCorrecta =
+                (deltaF == 2 && deltaC == 0) || (deltaF == 0 && deltaC == 2);
+        if (!distanciaCorrecta) {
+            return false;
+        }
+        int intermediaF = (origenF + destinoF) / 2;
+        int intermediaC = (origenC + destinoC) / 2;
+        return piezas[intermediaF][intermediaC] == null;
+    }
+
+    private Pieza buscarZombieAdyacente(int fila, int columna, String equipo,
+            Muerte duena) {
+        for (int f = fila - 1; f <= fila + 1; f++) {
+            for (int c = columna - 1; c <= columna + 1; c++) {
+                if (dentro(f, c) && piezas[f][c] instanceof Zombie zombie
+                        && equipo.equals(zombie.getEquipo())
+                        && zombie.getDuena() == duena) {
+                    return zombie;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void ejecutarAtaque(Pieza atacante, Pieza objetivo,
+            int filaObjetivo, int columnaObjetivo, String tipoAtaque,
+            Pieza ejecutorEspecial) {
+        int escudoAntes = objetivo.getEscudo();
+        int saludAntes = objetivo.getSalud();
+        int danio;
+        if (ejecutorEspecial == null) {
+            danio = atacante.atacarNormal(objetivo);
+        } else {
+            danio = ejecutorEspecial.Habilidad(objetivo);
+        }
+
+        String mensaje;
+        if (objetivo.estaViva()) {
+            mensaje = "Se atacó la pieza " + objetivo.getNombre()
+                    + " mediante " + tipoAtaque + " y se le aplicaron "
+                    + danio + " puntos; le quedan " + objetivo.getEscudo()
+                    + " puntos de escudo y " + objetivo.getSalud()
+                    + " de vida. Daño efectivo: escudo "
+                    + (escudoAntes - objetivo.getEscudo()) + ", vida "
+                    + (saludAntes - objetivo.getSalud()) + ".";
+        } else {
+            Jugador propietario = "blanco".equals(objetivo.getEquipo())
+                    ? jugadorBlanco : jugadorNegro;
+            mensaje = "Se destruyó la pieza " + objetivo.getNombre()
+                    + " del jugador " + propietario.getUserName() + ".";
+            piezas[filaObjetivo][columnaObjetivo] = null;
+            if (objetivo instanceof Muerte muerteDestruida) {
+                int zombiesEliminados = eliminarZombiesDe(muerteDestruida);
+                if (zombiesEliminados > 0) {
+                    mensaje += " Sus " + zombiesEliminados
+                            + (zombiesEliminados == 1
+                                    ? " Zombie también fue destruido."
+                                    : " Zombies también fueron destruidos.");
+                }
+            }
+        }
+        actualizarTablero();
+        panel.setMensaje(mensaje);
+        JOptionPane.showMessageDialog(this, mensaje);
+        if (!verificarFinPartida()) {
+            finalizarAccion();
+        }
+    }
+
+    private int eliminarZombiesDe(Muerte muerteDestruida) {
+        int eliminados = 0;
+        for (int fila = 0; fila < TAMANO; fila++) {
+            for (int columna = 0; columna < TAMANO; columna++) {
+                if (piezas[fila][columna] instanceof Zombie zombie
+                        && zombie.getDuena() == muerteDestruida) {
+                    piezas[fila][columna] = null;
+                    eliminados++;
+                }
+            }
+        }
+        return eliminados;
+    }
+
+    private void finalizarAccion() {
+        limpiarSeleccion();
+        tipoAutorizado = "";
+        cambiarTurno();
+    }
+
+    private void cambiarTurno() {
+        turnoBlanco = !turnoBlanco;
+        prepararTurno();
+    }
+
+    private void prepararTurno() {
+        tipoAutorizado = "";
+        girosUtilizados = 0;
+        limpiarSeleccion();
+        String nombre = jugadorActual().getUserName();
+        panel.setMensaje("Turno de <b>" + nombre + "</b> ("
+                + equipoActual() + "). Gire la ruleta.");
+        panel.getRuleta().prepararGiro("Turno de " + nombre + ": gira la ruleta");
+    }
+
+    private int girosPermitidos(String equipo) {
+        int perdidas = 6 - contarPiezasPrincipales(equipo);
+        if (perdidas >= 4) {
+            return 3;
+        }
+        if (perdidas >= 2) {
+            return 2;
+        }
+        return 1;
+    }
+
+    private int contarPiezasPrincipales(String equipo) {
+        int cantidad = 0;
+        for (Pieza[] fila : piezas) {
+            for (Pieza pieza : fila) {
+                if (pieza != null && !(pieza instanceof Zombie)
+                        && equipo.equals(pieza.getEquipo())) {
+                    cantidad++;
+                }
+            }
+        }
+        return cantidad;
+    }
+
+    public boolean hayPiezaDisponible(String tipo, String equipo) {
+        if (tipo == null || equipo == null) {
+            return false;
+        }
+        for (Pieza[] fila : piezas) {
+            for (Pieza pieza : fila) {
+                if (pieza != null && pieza.estaViva()
+                        && equipo.equals(pieza.getEquipo())
+                        && tipo.equals(pieza.getNombre())) {
+                    return true;
                 }
             }
         }
         return false;
     }
 
-    public static int contarTiposPerdidos(String equipo) {
-        int tiposPerdidos = 0;
-
-        if (!hayPiezaDisponible("vampiro", equipo)) tiposPerdidos++;
-        if (!hayPiezaDisponible("hombre", equipo)) tiposPerdidos++;
-        if (!hayPiezaDisponible("muerte", equipo)) tiposPerdidos++;
-
-        return tiposPerdidos;
+    private boolean verificarFinPartida() {
+        boolean quedanBlancas = quedanPiezas("blanco");
+        boolean quedanNegras = quedanPiezas("negro");
+        if (quedanBlancas && quedanNegras) {
+            return false;
+        }
+        Jugador ganador = quedanBlancas ? jugadorBlanco : jugadorNegro;
+        Jugador perdedor = quedanBlancas ? jugadorNegro : jugadorBlanco;
+        finalizarPartida(ganador, ganador.getUserName() + " venció a "
+                + perdedor.getUserName()
+                + ". ¡Felicidades, has ganado 3 puntos!");
+        return true;
     }
-    public void actionPerformed(ActionEvent e){
-        JButton boton = (JButton) e.getSource();
-        limpiarColores(botones);
-        
-        if(Piezas.seMovio || Piezas.blancos == 0 || Piezas.negros == 0)
-            return;
-        
-        
-        String turnoEquipo = TurnoBlanco ? "blanco" : "negro";
-        int fila = (int) boton.getClientProperty("Fila");
-        int columna = (int) boton.getClientProperty("Columna");
-        Pieza tipo = (Pieza) boton.getClientProperty("Tipo");
-        String equipo = (String) boton.getClientProperty("equipo");
-        suerte.getResultado();
-        if(tipo != null ){
-            System.out.println("Presionaste el boton en fila " + fila + " columna " + columna+ " tipo: "+ tipo.getNombre());
-            
-            if(suerte.getResultado().equals((tipo.getNombre())) && turnoEquipo.equals(equipo)) {
-                switch (tipo.getNombre()){
-                    case "vampiro" -> {
-                        Piezas.VAMPIRO.moverse(botones[fila][columna] , botones, this);
-                        Piezas.VAMPIRO.ataque(botones[fila][columna] , botones, this);
-                        panel.mostrarBotonChupar(boton);
-                        
-                    }
-                    case "muerte" -> {
-                        Muerte muerte = (Muerte) tipo;
-                        muerteSeleccionada = muerte;
-                        
-                        Piezas.MUERTE.moverse(botones[fila][columna] , botones, this);
-                        Piezas.MUERTE.ataque(botones[fila][columna] , botones, this);
-                        
-                        panel.mostrarBotonInvocar(boton);
-                        
-                        for (JButton zombieBtn : muerteSeleccionada.getZombiesInvocados()) {
-                            Piezas.ZOMBIE.moverse(zombieBtn, botones, this);
-                            Piezas.ZOMBIE.ataque(zombieBtn, botones, this);
-                        }
-                        
-                    }
-                    case "lobo" -> {
-                        Piezas.HOMBRELOBO.moverse(botones[fila][columna] , botones, this);
-                        Piezas.HOMBRELOBO.ataque(botones[fila][columna] , botones, this);
-                        
-                    }
+
+    private boolean quedanPiezas(String equipo) {
+        for (Pieza[] fila : piezas) {
+            for (Pieza pieza : fila) {
+                if (pieza != null && equipo.equals(pieza.getEquipo())) {
+                    return true;
                 }
-                System.out.println("Turno de: " + (TurnoBlanco ? "blanco" : "negro") + " - Debe girar la ruleta");
-                
-            } 
-        }
-        
-            
-    }
-    public  void limpiarColores(JButton[][] tablero) {
-         boolean blancoUltimo = false;
-        for (int Fila = 0; Fila < 6; Fila++){
-
-           for(int Columna = 0; Columna < 6;Columna++){
-               
-               if(blancoUltimo == false){
-                   tablero[Fila][Columna].setBackground(Color.white);
-                   blancoUltimo = true;
-
-               }
-               else{
-                   tablero[Fila][Columna].setBackground(Color.DARK_GRAY);
-                   blancoUltimo = false;
-               }
-               for (var al : tablero[Fila][Columna].getActionListeners()) {
-                    tablero[Fila][Columna].removeActionListener(al);
-                }
-                tablero[Fila][Columna].addActionListener(this); // vuelve al listener base
-
-           }
-            blancoUltimo = !blancoUltimo;
-                
-        }
-        
-        panel.limpiar();
-                        
-       
-    }
-    public static Muerte getMuerteSeleccionada(){
-        return muerteSeleccionada;
-    }
-    
-    public static void limpiarMuerteSeleccionada(Muerte muerta) {
-        if (muerteSeleccionada == muerta) {
-            muerteSeleccionada = null;
-        }
-    }
-    public static JButton[][] getBotones() {
-        return botones;
-    }
-    
-    public static void verificarTipoEliminado(String equipo, String tipo) {
-    // Si ya no hay ninguna pieza de ese tipo
-    if (!hayPiezaDisponible(tipo, equipo)) {
-        int tiposPerdidos = contarTiposPerdidos(equipo);
-
-        System.out.println("⚠️ El equipo " + equipo + " ha perdido todas sus piezas tipo " + tipo + 
-                           ". Total de tipos perdidos: " + tiposPerdidos);
-
-        // Rehabilita el botón girar según cantidad de tipos perdidos
-        SwingUtilities.invokeLater(() -> {
-            
-            ruleta r = opciones.getRuleta();
-
-            int girosExtra = tiposPerdidos == 1 ? 1 : tiposPerdidos == 2 ? 2 : 0;
-
-            if (girosExtra > 0) {
-                JOptionPane.showMessageDialog(null,
-                    "El equipo " + equipo + " ha perdido todas sus piezas de tipo " + tipo + 
-                    ". Recibe " + girosExtra + " turno(s) extra para girar la ruleta.");
-
-                // Habilita el botón de girar
-                r.setBotonGirarEnabled(true);
-                r.requestFocusInWindow();
-
-                // Guardar los giros extra para usarlos después
-                r.setIntentosExtra(girosExtra);
             }
-        });
+        }
+        return false;
     }
-}
 
+    private void confirmarRetiro() {
+        if (partidaFinalizada) {
+            return;
+        }
+        int respuesta = JOptionPane.showConfirmDialog(
+                this,
+                "¿Confirma que desea retirarse de la partida?",
+                "Confirmar retiro",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (respuesta == JOptionPane.YES_OPTION) {
+            Jugador retirado = jugadorActual();
+            Jugador ganador = turnoBlanco ? jugadorNegro : jugadorBlanco;
+            finalizarPartida(ganador, retirado.getUserName()
+                    + " se ha retirado. ¡Felicidades, "
+                    + ganador.getUserName() + ", has ganado 3 puntos!");
+        }
+    }
+
+    private void finalizarPartida(Jugador ganador, String mensaje) {
+        partidaFinalizada = true;
+        panel.getRuleta().setBotonGirarEnabled(false);
+        ganador.agregarVictoria();
+        try {
+            RepositorioSistema repositorio = MemoriaSistema.getInstancia();
+            repositorio.agregarPartida(
+                    new HistorialPartida(jugadorBlanco, jugadorNegro, mensaje));
+        } catch (ValidacionException excepcion) {
+            JOptionPane.showMessageDialog(this,
+                    "La partida terminó, pero no pudo registrarse: "
+                    + excepcion.getMessage(),
+                    "Historial lleno",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+        JOptionPane.showMessageDialog(this, mensaje, "Fin de la partida",
+                JOptionPane.INFORMATION_MESSAGE);
+        ventana.dispose();
+        new MenuPrincipal().setVisible(true);
+    }
+
+    private void limpiarSeleccion() {
+        limpiarIndicadoresVisuales();
+        filaOrigen = -1;
+        columnaOrigen = -1;
+        muerteActiva = null;
+    }
+
+    private void limpiarIndicadoresVisuales() {
+        for (int fila = 0; fila < TAMANO; fila++) {
+            for (int columna = 0; columna < TAMANO; columna++) {
+                botones[fila][columna].setDestacado(
+                        CasillaTablero.Destacado.NORMAL);
+                botones[fila][columna].setBorder(BORDE_NORMAL);
+            }
+        }
+        repaint();
+    }
+
+    private Jugador jugadorActual() {
+        return turnoBlanco ? jugadorBlanco : jugadorNegro;
+    }
+
+    private String equipoActual() {
+        return turnoBlanco ? "blanco" : "negro";
+    }
+
+    private boolean dentro(int fila, int columna) {
+        return fila >= 0 && fila < TAMANO && columna >= 0 && columna < TAMANO;
+    }
+
+    private void actualizarTablero() {
+        for (int fila = 0; fila < TAMANO; fila++) {
+            for (int columna = 0; columna < TAMANO; columna++) {
+                CasillaTablero boton = botones[fila][columna];
+                boton.setColorBase((fila + columna) % 2 == 0
+                        ? Color.WHITE : new Color(205, 210, 218));
+                Pieza pieza = piezas[fila][columna];
+                boton.setIcon(cargarIcono(pieza));
+                boton.setToolTipText(pieza == null ? "Casilla vacía"
+                        : pieza.getNombre() + " - " + pieza.getEquipo()
+                        + " | Vida: " + pieza.getSalud()
+                        + " | Escudo: " + pieza.getEscudo());
+            }
+        }
+        revalidate();
+        repaint();
+    }
+
+    private ImageIcon cargarIcono(Pieza pieza) {
+        if (pieza == null) {
+            return null;
+        }
+        String tipo = switch (pieza.getNombre()) {
+            case "lobo" -> "Lobo";
+            case "vampiro" -> "Vampiro";
+            case "muerte" -> "Muerte";
+            case "zombie" -> "Zombie";
+            default -> "";
+        };
+        String color = "blanco".equals(pieza.getEquipo()) ? "Blanco" : "Negro";
+        try {
+            URL recurso = getClass().getResource(
+                    "/vampireswargame/imagenes/" + tipo + color + ".png");
+            if (recurso == null) {
+                return null;
+            }
+            Image imagen = new ImageIcon(recurso).getImage()
+                    .getScaledInstance(82, 82, Image.SCALE_SMOOTH);
+            return new ImageIcon(imagen);
+        } catch (RuntimeException excepcion) {
+            return null;
+        }
+    }
+
+    Pieza[][] getPiezasParaPruebas() {
+        return piezas;
+    }
 }

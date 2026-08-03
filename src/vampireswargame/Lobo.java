@@ -1,28 +1,17 @@
 package vampireswargame;
 
-import javax.swing.JButton;
-
-/**
- *
- * @author gaat1
- */
-public final class Lobo  extends Pieza {
-    private Piezas lobo = Piezas.HOMBRELOBO;
-     private final String nombre = "lobo";
-    
+public final class Lobo extends Pieza {
     public Lobo() {
-        this.ataque = lobo.getAtaque();
-        this.escudo = lobo.getEscudo();
-        this.salud = lobo.getSalud();
+        super(5, 5, 2, 2);
     }
-    public String getNombre(){
-        return nombre;
+
+    @Override
+    public String getNombre() {
+        return "lobo";
     }
-    public int getSalud(){
-        return salud;
+
+    @Override
+    public int Habilidad(Pieza objetivo) {
+        return 0;
     }
-    public int getEscudo(){
-        return escudo;
-    }
-    public void Habilidad(JButton invocador, JButton[][] tablero, Tablero tabla){}
 }

@@ -1,29 +1,24 @@
 package vampireswargame;
 
-import javax.swing.JButton;
-
-/**
- *
- * @author gaat1
- */
 public final class Zombie extends Pieza {
-    private Piezas zombie = Piezas.ZOMBIE;
-    private String nombre = "zombie";
+    private final Muerte duena;
 
-    
-    public Zombie(){
-        this.ataque = zombie.getAtaque();
-        this.escudo = zombie.getEscudo();
-        this.salud = zombie.getSalud();
+    public Zombie(Muerte duena) {
+        super(1, 1, 0, 1);
+        this.duena = duena;
     }
-    public String getNombre(){
-        return nombre;
+
+    @Override
+    public String getNombre() {
+        return "zombie";
     }
-    public int getSalud(){
-        return salud;
+
+    @Override
+    public int Habilidad(Pieza objetivo) {
+        return atacarNormal(objetivo);
     }
-    public int getEscudo(){
-        return escudo;
+
+    public Muerte getDuena() {
+        return duena;
     }
-    public void Habilidad(JButton invocador, JButton[][] tablero, Tablero tabla){}
 }

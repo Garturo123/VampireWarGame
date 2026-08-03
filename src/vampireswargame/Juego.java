@@ -3,32 +3,27 @@ package vampireswargame;
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
 
-/**
- *
- * @author gaat1
- */
 public class Juego extends JFrame {
-    private static Tablero tabla;
-    private static opciones panel;
-    
-    public Juego(){
-        setTitle("Vampire War Game");
-        setSize(1350,1000);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    private final Tablero tablero;
+    private final opciones panelOpciones;
+
+    public Juego(Jugador jugadorUno, Jugador jugadorDos) {
+        setTitle("Vampire Wargame - " + jugadorUno + " vs. " + jugadorDos);
+        setSize(1280, 850);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        panel = new opciones();
-        tabla = new Tablero(panel, this);
-        
-        
-        
-        add(panel, BorderLayout.WEST);
-        add(tabla, BorderLayout.CENTER);
+        panelOpciones = new opciones();
+        tablero = new Tablero(panelOpciones, this, jugadorUno, jugadorDos);
+        add(panelOpciones, BorderLayout.WEST);
+        add(tablero, BorderLayout.CENTER);
     }
-    public static Tablero getTablero(){
-        return tabla;
+
+    public Tablero getTablero() {
+        return tablero;
     }
-    public static opciones panel(){
-        return panel;
+
+    public opciones getPanelOpciones() {
+        return panelOpciones;
     }
 }

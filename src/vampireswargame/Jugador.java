@@ -1,112 +1,102 @@
 package vampireswargame;
 
-/**
- *
- * @author gaat1
- */
-import java.util.ArrayList;
-import java.util.Calendar;
-import javax.swing.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-/**
- *
- * @author gaat1
- */
 public class Jugador {
-  
-    private String userName;
+    private static final DateTimeFormatter FORMATO_FECHA =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    private final String userName;
     private String password;
-    private int Ranking;
-    private Calendar fechaIngreso; 
-    static ArrayList<Jugador> jugadores = new ArrayList<>();;
-    
-    public Jugador(String userName, String password){
-        
+    private int ranking;
+    private final LocalDateTime fechaIngreso;
+    private boolean activo;
+
+    public Jugador(String userName, String password) throws ValidacionException {
+        String nombreLimpio = userName == null ? "" : userName.trim();
+        validarNombre(nombreLimpio);
+        validarPassword(password);
+        this.userName = nombreLimpio;
         this.password = password;
-        this.userName = userName;
-        Ranking = 0;
-        fechaIngreso = Calendar.getInstance();
+        this.ranking = 0;
+        this.fechaIngreso = LocalDateTime.now();
+        this.activo = true;
     }
-    public String getUserName(){
+
+    public static Jugador registrar(String nombre, String password)
+            throws ValidacionException {
+        Jugador jugador = new Jugador(nombre, password);
+        RepositorioSistema repositorio = MemoriaSistema.getInstancia();
+        repositorio.agregarJugador(jugador);
+        return jugador;
+    }
+
+    public static Jugador autenticar(String nombre, char[] password)
+            throws ValidacionException {
+        RepositorioSistema repositorio = MemoriaSistema.getInstancia();
+        Jugador jugador = repositorio.buscarJugador(nombre);
+        if (jugador == null || !jugador.isActivo()) {
+            throw new ValidacionException("El jugador no existe o su cuenta está cerrada.");
+        }
+        String clave = password == null ? "" : new String(password);
+        if (!jugador.password.equals(clave)) {
+            throw new ValidacionException("Contraseña incorrecta.");
+        }
+        return jugador;
+    }
+
+    private static void validarNombre(String nombre) throws ValidacionException {
+        if (nombre == null || nombre.isBlank()) {
+            throw new ValidacionException("Debe ingresar un nombre de usuario.");
+        }
+    }
+
+    private static void validarPassword(String password) throws ValidacionException {
+        if (password == null || password.length() != 5) {
+            throw new ValidacionException(
+                    "La contraseña debe tener exactamente 5 caracteres.");
+        }
+    }
+
+    public void cambiarPassword(String actual, String nueva, String confirmacion)
+            throws ValidacionException {
+        if (!password.equals(actual)) {
+            throw new ValidacionException("La contraseña actual es incorrecta.");
+        }
+        validarPassword(nueva);
+        if (!nueva.equals(confirmacion)) {
+            throw new ValidacionException("La confirmación no coincide.");
+        }
+        password = nueva;
+    }
+
+    public String getUserName() {
         return userName;
     }
-    
-    public static Jugador buscarJugador(String j, int i){
-        if(jugadores.size()>i){
-            
-            if(jugadores.get(i).userName.equals(j))
-                return jugadores.get(i);
-            
-            return buscarJugador(j, i+=1);
-        }
-        return null;
-            
-    }
-    
-    public static void registrarUsuario(JTextField nombreUsuario, JPasswordField password, JFrame frame){
-            String nombre = nombreUsuario.getText();
-            boolean existe = false;
-            for (Jugador j : Jugador.jugadores) {
-                if (j.getUserName().equals(nombre)) {
-                    existe = true;
-                    break;
-                }
-            }
-            
-            
-            String PassWord = new String(password.getPassword());
-            if(existe){
-                JOptionPane.showMessageDialog(null, "Ya existe una cuenta con este nombre.");
-                return;
-            }
-            
-            if (nombreUsuario.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(null, "No ingresastes nombre.");
-                return;
-            }
-            System.out.println(""+nombre);
-            System.out.println("PassWord: "+ PassWord);
-            if(PassWord.length()!=5){
-                JOptionPane.showMessageDialog(null, "La contrasenia tiene que ser de 5 caracteres exactos.");
-                return;
-            }
 
-            Jugador player = new Jugador(nombre,PassWord);
-            MenuPrincipal.JugadorActual   = player ;
-            Jugador.jugadores.add(player);
-            SwingUtilities.invokeLater(()->{
-               MenuPrincipal principal = new MenuPrincipal();
-               frame.setVisible(false);
-               principal.setVisible(true);
-           });
-                    
-    }
-    public static void IngresarSecion(String jugador , char[] password ,JFrame frame){
-        Jugador player = buscarJugador(jugador,0);
-        if(player==null){
-            JOptionPane.showMessageDialog(null, "No hay usuarios con este nombre.");
-
-             return;
-        }
-        String PassWord = new String(password);   
-        if(!player.password.equals(PassWord)){
-            JOptionPane.showMessageDialog(null, "Contrasenia incorrecta.");
-             return;
-        }
-           
-        MenuPrincipal.JugadorActual   = player ;
-            
-            SwingUtilities.invokeLater(()->{
-               MenuPrincipal principal = new MenuPrincipal();
-               frame.setVisible(false);
-               principal.setVisible(true);
-           });
-    }
     public int getRanking() {
-        return Ranking;
+        return ranking;
     }
-    public void setRanking(int ranking) {
-        this.Ranking = ranking;
+
+    public void agregarVictoria() {
+        ranking += 3;
     }
-    
+
+    public String getFechaIngresoFormateada() {
+        return fechaIngreso.format(FORMATO_FECHA);
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void cerrarCuenta() {
+        activo = false;
+    }
+
+    @Override
+    public String toString() {
+        return userName;
+    }
 }

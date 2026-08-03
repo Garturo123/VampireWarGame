@@ -1,55 +1,47 @@
 package vampireswargame;
 
-/**
- *
- * @author gaat1
- */
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Component;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
-public class MenuInicio extends JFrame{
-        public MenuInicio(){
-        setTitle("Menu de Inicio");
-        setSize(300,200);
+public class MenuInicio extends JFrame {
+    public MenuInicio() {
+        setTitle("Vampire Wargame - Inicio");
+        setSize(360, 240);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        
-        JButton logIN = new JButton("Log In");
-        JButton crearCuenta = new JButton("Crear Cuenta");
+
+        JButton iniciarSesion = new JButton("Iniciar sesión");
+        JButton crearJugador = new JButton("Crear jugador");
         JButton salir = new JButton("Salir");
-        
-        logIN.setAlignmentX(Component.CENTER_ALIGNMENT);
-        crearCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
-        salir.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+        JButton[] botones = {iniciarSesion, crearJugador, salir};
+        for (JButton boton : botones) {
+            boton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        }
+
         panel.add(Box.createVerticalGlue());
-        panel.add(logIN);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(crearCuenta);
-        panel.add(Box.createVerticalStrut(10));
+        panel.add(iniciarSesion);
+        panel.add(Box.createVerticalStrut(12));
+        panel.add(crearJugador);
+        panel.add(Box.createVerticalStrut(12));
         panel.add(salir);
         panel.add(Box.createVerticalGlue());
-        
         add(panel);
-        
-        logIN.addActionListener(e ->{ 
-            System.out.println("Log in");
-            IngresarSecion frame = new IngresarSecion();
-             this.setVisible(false);
-               frame.setVisible(true);
-                });
-        crearCuenta.addActionListener(e -> {
-            SwingUtilities.invokeLater(()->{
-                CrearCuenta frame = new CrearCuenta();
-                this.setVisible(false);
-               frame.setVisible(true);
-               
-            });
-            
-        });
-        salir.addActionListener(e -> System.out.println("Salir"));
-        }
+
+        iniciarSesion.addActionListener(e -> UiSeguro.ejecutar(this, () -> {
+            dispose();
+            new IngresarSecion().setVisible(true);
+        }));
+        crearJugador.addActionListener(e -> UiSeguro.ejecutar(this, () -> {
+            dispose();
+            new CrearCuenta().setVisible(true);
+        }));
+        salir.addActionListener(e -> System.exit(0));
     }
+}
