@@ -1,10 +1,13 @@
 package vampireswargame;
 
 import java.awt.Component;
+import java.awt.Font;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -13,12 +16,20 @@ public class MenuPrincipal extends JFrame {
 
     public MenuPrincipal() {
         setTitle("Vampire Wargame - Menú principal");
-        setSize(430, 310);
+        setSize(700, 620);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(RecursosVisuales.FONDO_GOTICO);
+        panel.setBorder(BorderFactory.createEmptyBorder(12, 35, 24, 35));
+        JLabel logo = RecursosVisuales.crearLogo(610, 305);
+        JLabel bienvenida = new JLabel("Bienvenido, "
+                + jugadorActual.getUserName());
+        bienvenida.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bienvenida.setForeground(RecursosVisuales.TEXTO_MARFIL);
+        bienvenida.setFont(new Font("Serif", Font.BOLD, 18));
         JButton jugar = new JButton("Nueva partida");
         JButton miCuenta = new JButton("Mi cuenta");
         JButton reportes = new JButton("Reportes");
@@ -28,6 +39,9 @@ public class MenuPrincipal extends JFrame {
             boton.setAlignmentX(Component.CENTER_ALIGNMENT);
         }
 
+        panel.add(logo);
+        panel.add(bienvenida);
+        panel.add(Box.createVerticalStrut(12));
         panel.add(Box.createVerticalGlue());
         for (JButton boton : botones) {
             panel.add(boton);
