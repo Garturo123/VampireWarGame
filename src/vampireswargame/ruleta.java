@@ -41,7 +41,8 @@ public class ruleta extends JPanel implements ActionListener {
     private String resultado = "";
 
     public ruleta() {
-        setPreferredSize(new Dimension(440, 500));
+        setPreferredSize(new Dimension(420, 350));
+        setMaximumSize(new Dimension(420, 350));
         setBackground(RecursosVisuales.FONDO_GOTICO);
         setOpaque(true);
         setLayout(new BorderLayout());

@@ -19,6 +19,9 @@ public class Tablero extends JPanel {
             BorderFactory.createLineBorder(Color.YELLOW, 4);
     private static final Border BORDE_GRUPO =
             BorderFactory.createLineBorder(new Color(255, 170, 35), 3);
+    private static final Border BORDE_RULETA =
+            BorderFactory.createLineBorder(new Color(76, 205, 230), 3);
+    private static final long INTERVALO_DOBLE_CLIC_MS = 500;
 
     private final CasillaTablero[][] botones =
             new CasillaTablero[TAMANO][TAMANO];
@@ -27,12 +30,19 @@ public class Tablero extends JPanel {
     private final JFrame ventana;
     private final Jugador jugadorBlanco;
     private final Jugador jugadorNegro;
+    private final Pieza[] capturasBlancas = new Pieza[100];
+    private final Pieza[] capturasNegras = new Pieza[100];
+    private int cantidadCapturasBlancas;
+    private int cantidadCapturasNegras;
     private boolean turnoBlanco = true;
     private boolean partidaFinalizada;
     private String tipoAutorizado = "";
     private int girosUtilizados;
     private int filaOrigen = -1;
     private int columnaOrigen = -1;
+    private int ultimaFilaClic = -1;
+    private int ultimaColumnaClic = -1;
+    private long instanteUltimoClic;
     private Muerte muerteActiva;
 
     public Tablero(opciones panel, JFrame ventana, Jugador jugadorBlanco,
@@ -41,6 +51,8 @@ public class Tablero extends JPanel {
         this.ventana = ventana;
         this.jugadorBlanco = jugadorBlanco;
         this.jugadorNegro = jugadorNegro;
+        panel.configurarJugadores(jugadorBlanco, jugadorNegro);
+        panel.actualizarCapturas(capturasBlancas, 0, capturasNegras, 0);
         setLayout(new GridLayout(TAMANO, TAMANO));
         construirCasillas();
         colocarPiezasIniciales();
@@ -94,10 +106,11 @@ public class Tablero extends JPanel {
         String equipo = equipoActual();
         if (hayPiezaDisponible(resultado, equipo)) {
             tipoAutorizado = resultado;
+            marcarPiezasAutorizadas();
             panel.getRuleta().setBotonGirarEnabled(false);
             panel.setMensaje("Turno de <b>" + jugadorActual().getUserName()
                     + "</b> (" + equipo + "). Seleccione una pieza "
-                    + resultado + ".");
+                    + resultado + " marcada con borde celeste.");
             return;
         }
 
@@ -123,13 +136,29 @@ public class Tablero extends JPanel {
                     "Primero debe girar la ruleta.");
             return;
         }
+
+        long instanteActual = System.currentTimeMillis();
+        boolean esDobleClic = fila == ultimaFilaClic
+                && columna == ultimaColumnaClic
+                && instanteActual - instanteUltimoClic
+                <= INTERVALO_DOBLE_CLIC_MS;
+        ultimaFilaClic = fila;
+        ultimaColumnaClic = columna;
+        instanteUltimoClic = instanteActual;
+
+        if (esDobleClic && filaOrigen == fila && columnaOrigen == columna) {
+            limpiarSeleccion();
+            panel.mostrarInformacionPieza(null);
+            panel.setMensaje("Pieza deseleccionada. Elija otra pieza "
+                    + tipoAutorizado + " marcada con borde celeste.");
+            return;
+        }
+
         if (filaOrigen < 0) {
             seleccionarOrigen(fila, columna);
-        } else if (filaOrigen == fila && columnaOrigen == columna
-                && muerteActiva == null) {
-            limpiarSeleccion();
-            panel.setMensaje("Selección cancelada. Elija otra pieza "
-                    + tipoAutorizado + ".");
+        } else if (filaOrigen == fila && columnaOrigen == columna) {
+            panel.setMensaje("La pieza continúa seleccionada. Haga doble clic "
+                    + "sobre ella para deseleccionarla.");
         } else {
             seleccionarDestino(fila, columna);
         }
@@ -153,6 +182,7 @@ public class Tablero extends JPanel {
         }
         filaOrigen = fila;
         columnaOrigen = columna;
+        panel.mostrarInformacionPieza(pieza);
         if (pieza instanceof Muerte muerte) {
             muerteActiva = muerte;
             panel.setMensaje("Muerte y Zombies vinculados seleccionados. "
@@ -180,6 +210,12 @@ public class Tablero extends JPanel {
             mostrarDestinosDisponibles();
             return;
         }
+        if (destino != null
+                && equipoActual().equals(destino.getEquipo())
+                && tipoAutorizado.equals(destino.getNombre())) {
+            cambiarPiezaSeleccionada(fila, columna);
+            return;
+        }
         if (destino == null) {
             procesarCasillaVacia(atacante, fila, columna);
         } else if (atacante.getEquipo().equals(destino.getEquipo())) {
@@ -188,6 +224,11 @@ public class Tablero extends JPanel {
         } else {
             procesarAtaque(atacante, destino, fila, columna);
         }
+    }
+
+    private void cambiarPiezaSeleccionada(int fila, int columna) {
+        limpiarSeleccion();
+        seleccionarOrigen(fila, columna);
     }
 
     private boolean esIntegranteMuerteActiva(Pieza pieza) {
@@ -206,6 +247,7 @@ public class Tablero extends JPanel {
         filaOrigen = fila;
         columnaOrigen = columna;
         Pieza seleccionada = piezas[fila][columna];
+        panel.mostrarInformacionPieza(seleccionada);
         if (seleccionada instanceof Zombie) {
             panel.setMensaje("Zombie de la Muerte seleccionado. Puede moverlo "
                     + "a una casilla celeste o atacar una casilla roja.");
@@ -295,15 +337,11 @@ public class Tablero extends JPanel {
             String[] opcionesAccion = movimientoValido
                     ? new String[]{"Mover", "Invocar Zombie", "Cancelar"}
                     : new String[]{"Invocar Zombie", "Cancelar"};
-            int eleccion = JOptionPane.showOptionDialog(
+            int eleccion = RecursosVisuales.mostrarOpciones(
                     this,
-                    "¿Qué acción desea ejecutar?",
-                    "Habilidad del Necrómante",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    opcionesAccion,
-                    opcionesAccion[0]);
+                    "¿Qué acción desea ejecutar con la Muerte?",
+                    "Habilidad del Nigromante",
+                    opcionesAccion);
             if (eleccion < 0 || "Cancelar".equals(opcionesAccion[eleccion])) {
                 return;
             }
@@ -421,15 +459,11 @@ public class Tablero extends JPanel {
     }
 
     private int elegirAtaque(String[] acciones) {
-        return JOptionPane.showOptionDialog(
+        return RecursosVisuales.mostrarOpciones(
                 this,
-                "Seleccione el tipo de ataque:",
+                "Seleccione el ataque que desea realizar:",
                 "Combate",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                acciones,
-                acciones[0]);
+                acciones);
     }
 
     private boolean esLanzaValida(int origenF, int origenC,
@@ -486,9 +520,11 @@ public class Tablero extends JPanel {
                     ? jugadorBlanco : jugadorNegro;
             mensaje = "Se destruyó la pieza " + objetivo.getNombre()
                     + " del jugador " + propietario.getUserName() + ".";
+            registrarCaptura(atacante.getEquipo(), objetivo);
             piezas[filaObjetivo][columnaObjetivo] = null;
             if (objetivo instanceof Muerte muerteDestruida) {
-                int zombiesEliminados = eliminarZombiesDe(muerteDestruida);
+                int zombiesEliminados = eliminarZombiesDe(
+                        muerteDestruida, atacante.getEquipo());
                 if (zombiesEliminados > 0) {
                     mensaje += " Sus " + zombiesEliminados
                             + (zombiesEliminados == 1
@@ -505,18 +541,32 @@ public class Tablero extends JPanel {
         }
     }
 
-    private int eliminarZombiesDe(Muerte muerteDestruida) {
+    private int eliminarZombiesDe(Muerte muerteDestruida,
+            String equipoCapturador) {
         int eliminados = 0;
         for (int fila = 0; fila < TAMANO; fila++) {
             for (int columna = 0; columna < TAMANO; columna++) {
                 if (piezas[fila][columna] instanceof Zombie zombie
                         && zombie.getDuena() == muerteDestruida) {
+                    registrarCaptura(equipoCapturador, zombie);
                     piezas[fila][columna] = null;
                     eliminados++;
                 }
             }
         }
         return eliminados;
+    }
+
+    private void registrarCaptura(String equipoCapturador, Pieza capturada) {
+        if ("blanco".equals(equipoCapturador)) {
+            if (cantidadCapturasBlancas < capturasBlancas.length) {
+                capturasBlancas[cantidadCapturasBlancas++] = capturada;
+            }
+        } else if (cantidadCapturasNegras < capturasNegras.length) {
+            capturasNegras[cantidadCapturasNegras++] = capturada;
+        }
+        panel.actualizarCapturas(capturasBlancas, cantidadCapturasBlancas,
+                capturasNegras, cantidadCapturasNegras);
     }
 
     private void finalizarAccion() {
@@ -535,6 +585,8 @@ public class Tablero extends JPanel {
         girosUtilizados = 0;
         limpiarSeleccion();
         String nombre = jugadorActual().getUserName();
+        panel.actualizarTurno(jugadorActual(), equipoActual());
+        panel.mostrarInformacionPieza(null);
         panel.setMensaje("Turno de <b>" + nombre + "</b> ("
                 + equipoActual() + "). Gire la ruleta.");
         panel.getRuleta().prepararGiro("Turno de " + nombre + ": gira la ruleta");
@@ -660,7 +712,25 @@ public class Tablero extends JPanel {
                 botones[fila][columna].setBorder(BORDE_NORMAL);
             }
         }
+        marcarPiezasAutorizadas();
         repaint();
+    }
+
+    private void marcarPiezasAutorizadas() {
+        if (tipoAutorizado == null || tipoAutorizado.isBlank()) {
+            return;
+        }
+        String equipo = equipoActual();
+        for (int fila = 0; fila < TAMANO; fila++) {
+            for (int columna = 0; columna < TAMANO; columna++) {
+                Pieza pieza = piezas[fila][columna];
+                if (pieza != null
+                        && equipo.equals(pieza.getEquipo())
+                        && tipoAutorizado.equals(pieza.getNombre())) {
+                    botones[fila][columna].setBorder(BORDE_RULETA);
+                }
+            }
+        }
     }
 
     private Jugador jugadorActual() {

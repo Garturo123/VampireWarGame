@@ -61,6 +61,10 @@ public abstract class Pieza {
         return salud;
     }
 
+    public final int getSaludMaxima() {
+        return saludMaxima;
+    }
+
     public final int getEscudo() {
         return escudo;
     }

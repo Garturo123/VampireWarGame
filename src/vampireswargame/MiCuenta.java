@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -14,15 +15,16 @@ public final class MiCuenta extends JFrame {
     public MiCuenta() {
         Jugador jugador = MenuPrincipal.getJugadorActual();
         setTitle("Mi cuenta");
-        setSize(470, 350);
+        setSize(540, 470);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel contenido = new PanelFondoGotico(new GridLayout(8, 2, 8, 8));
+        JPanel contenido = new PanelFondoGotico(new GridLayout(9, 2, 8, 8));
         contenido.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         JPasswordField actual = new JPasswordField();
         JPasswordField nueva = new JPasswordField();
         JPasswordField confirmacion = new JPasswordField();
+        JCheckBox mostrar = new JCheckBox("Mostrar contraseñas");
         JButton cambiar = RecursosVisuales.crearBoton("Cambiar contraseña");
         JButton cerrarCuenta = RecursosVisuales.crearBoton("Cerrar mi cuenta");
         JButton volver = RecursosVisuales.crearBoton("Volver");
@@ -39,11 +41,19 @@ public final class MiCuenta extends JFrame {
         contenido.add(nueva);
         contenido.add(new JLabel("Confirmar contraseña:"));
         contenido.add(confirmacion);
+        contenido.add(new JLabel(""));
+        contenido.add(mostrar);
         contenido.add(cambiar);
         contenido.add(cerrarCuenta);
         contenido.add(volver);
         add(contenido, BorderLayout.CENTER);
         RecursosVisuales.aplicarTema(contenido);
+        RecursosVisuales.configurarVisibilidad(
+                mostrar, actual, nueva, confirmacion);
+        actual.setToolTipText("Contraseña que utilizas actualmente");
+        nueva.setToolTipText("Nueva contraseña de exactamente 5 caracteres");
+        confirmacion.setToolTipText("Repite la nueva contraseña");
+        getRootPane().setDefaultButton(cambiar);
 
         cambiar.addActionListener(e -> UiSeguro.ejecutar(this, () -> {
             try {
