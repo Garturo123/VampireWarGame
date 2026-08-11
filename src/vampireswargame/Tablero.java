@@ -54,6 +54,9 @@ public class Tablero extends JPanel {
         panel.configurarJugadores(jugadorBlanco, jugadorNegro);
         panel.actualizarCapturas(capturasBlancas, 0, capturasNegras, 0);
         setLayout(new GridLayout(TAMANO, TAMANO));
+        setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(66, 9, 20), 4),
+                BorderFactory.createLineBorder(new Color(122, 111, 91), 2)));
         construirCasillas();
         colocarPiezasIniciales();
         panel.getRuleta().setRuletaListener(resultado ->
@@ -186,8 +189,9 @@ public class Tablero extends JPanel {
         if (pieza instanceof Muerte muerte) {
             muerteActiva = muerte;
             panel.setMensaje("Muerte y Zombies vinculados seleccionados. "
-                    + "Elija una casilla para mover o invocar, o seleccione "
-                    + "uno de sus Zombies para utilizarlo.");
+                    + "Elija una casilla para mover o invocar. Para ordenar "
+                    + "un ataque mediante Zombie, seleccione una pieza "
+                    + "enemiga adyacente a uno de ellos.");
         } else {
             panel.setMensaje("Pieza seleccionada. Elija una casilla celeste "
                     + "para mover o una roja para atacar.");
@@ -239,18 +243,16 @@ public class Tablero extends JPanel {
             return true;
         }
         return pieza instanceof Zombie zombie
-                && zombie.getDuena() == muerteActiva
                 && muerteActiva.getEquipo().equals(zombie.getEquipo());
     }
 
     private void seleccionarIntegranteMuerte(int fila, int columna) {
-        filaOrigen = fila;
-        columnaOrigen = columna;
         Pieza seleccionada = piezas[fila][columna];
         panel.mostrarInformacionPieza(seleccionada);
         if (seleccionada instanceof Zombie) {
-            panel.setMensaje("Zombie de la Muerte seleccionado. Puede moverlo "
-                    + "a una casilla celeste o atacar una casilla roja.");
+            panel.setMensaje("El Zombie no puede desplazarse por sí mismo. "
+                    + "La Muerte continúa seleccionada; elija una pieza "
+                    + "enemiga adyacente al Zombie para ordenarle atacar.");
         } else {
             panel.setMensaje("Muerte seleccionada. Las casillas amarillas "
                     + "permiten invocar y las celestes permiten moverse.");
@@ -327,7 +329,7 @@ public class Tablero extends JPanel {
             return true;
         }
         return distancia > 2 && buscarZombieAdyacente(
-                destinoF, destinoC, atacante.getEquipo(), muerte) != null;
+                destinoF, destinoC, atacante.getEquipo()) != null;
     }
 
     private void procesarCasillaVacia(Pieza atacante, int fila, int columna) {
@@ -446,7 +448,7 @@ public class Tablero extends JPanel {
             Pieza zombie = distancia > 2
                     ? buscarZombieAdyacente(
                             filaObjetivo, columnaObjetivo,
-                            atacante.getEquipo(), (Muerte) atacante)
+                            atacante.getEquipo())
                     : null;
             if (zombie != null) {
                 ejecutarAtaque(atacante, objetivo, filaObjetivo,
@@ -480,13 +482,12 @@ public class Tablero extends JPanel {
         return piezas[intermediaF][intermediaC] == null;
     }
 
-    private Pieza buscarZombieAdyacente(int fila, int columna, String equipo,
-            Muerte duena) {
+    private Pieza buscarZombieAdyacente(int fila, int columna,
+            String equipo) {
         for (int f = fila - 1; f <= fila + 1; f++) {
             for (int c = columna - 1; c <= columna + 1; c++) {
                 if (dentro(f, c) && piezas[f][c] instanceof Zombie zombie
-                        && equipo.equals(zombie.getEquipo())
-                        && zombie.getDuena() == duena) {
+                        && equipo.equals(zombie.getEquipo())) {
                     return zombie;
                 }
             }
@@ -528,8 +529,8 @@ public class Tablero extends JPanel {
                 if (zombiesEliminados > 0) {
                     mensaje += " Sus " + zombiesEliminados
                             + (zombiesEliminados == 1
-                                    ? " Zombie también fue destruido."
-                                    : " Zombies también fueron destruidos.");
+                                    ? " Zombie también murió."
+                                    : " Zombies también murieron.");
                 }
             }
         }
@@ -678,6 +679,7 @@ public class Tablero extends JPanel {
 
     private void finalizarPartida(Jugador ganador, String mensaje) {
         partidaFinalizada = true;
+        panel.getRuleta().cancelarGiro();
         panel.getRuleta().setBotonGirarEnabled(false);
         ganador.agregarVictoria();
         try {
@@ -750,7 +752,8 @@ public class Tablero extends JPanel {
             for (int columna = 0; columna < TAMANO; columna++) {
                 CasillaTablero boton = botones[fila][columna];
                 boton.setColorBase((fila + columna) % 2 == 0
-                        ? Color.WHITE : new Color(205, 210, 218));
+                        ? new Color(226, 224, 218)
+                        : new Color(184, 188, 196));
                 Pieza pieza = piezas[fila][columna];
                 boton.setIcon(cargarIcono(pieza));
                 boton.setToolTipText(pieza == null ? "Casilla vacía"

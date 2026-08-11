@@ -22,6 +22,17 @@ El código que compila NetBeans se encuentra en `src/vampireswargame`.
 - Clase principal: `VampiresWarGame.main()` solo delega el arranque.
 - GUI: todas las pantallas y el tablero utilizan Swing.
 
+## Prácticas de usabilidad
+
+- Paneles permanentes identifican Jugador 1/blanco/parte inferior y
+  Jugador 2/negro/parte superior.
+- El jugador que tiene el turno se resalta con borde dorado.
+- Las piezas capturadas se muestran mediante resumen e iconos.
+- La pieza seleccionada muestra ataque, vida, escudo, movimiento y habilidad.
+- El tablero incluye una leyenda para movimiento, ataque e invocación.
+- Los formularios incluyen tooltips, etiquetas accesibles, botón predeterminado
+  y opción para mostrar u ocultar contraseñas.
+
 ## Pruebas
 
 `test/vampireswargame/PruebasLogica.java` comprueba la estructura orientada

@@ -59,6 +59,8 @@ public class CrearCuenta extends JFrame {
             } catch (ValidacionException excepcion) {
                 JOptionPane.showMessageDialog(this, excepcion.getMessage(),
                         "No se pudo crear la cuenta", JOptionPane.WARNING_MESSAGE);
+                dispose();
+                new MenuInicio().setVisible(true);
             }
         }));
         cancelar.addActionListener(e -> UiSeguro.ejecutar(this, () -> {

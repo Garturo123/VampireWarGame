@@ -45,8 +45,10 @@ public final class PruebasLogica {
                 "La lanza debe ignorar el escudo y causar 2 de daño.");
 
         Pieza zombie = new Zombie((Muerte) muerte);
-        exigir(zombie.getMovilidad() == 1,
-                "El Zombie debe poder moverse durante el turno de su Muerte.");
+        exigir(zombie.getMovilidad() == 0,
+                "El Zombie no debe desplazarse por sí mismo.");
+        exigir(new Lobo().getMovilidad() == 2,
+                "El Hombre Lobo debe poder avanzar hasta dos casillas.");
         vampiro.Habilidad(zombie);
         exigir(!zombie.estaViva(),
                 "La absorción debe causar un punto de daño.");

@@ -4,7 +4,7 @@ public final class Zombie extends Pieza {
     private final Muerte duena;
 
     public Zombie(Muerte duena) {
-        super(1, 1, 0, 1);
+        super(1, 1, 0, 0);
         this.duena = duena;
     }
 

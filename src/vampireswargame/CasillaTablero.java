@@ -67,14 +67,44 @@ public final class CasillaTablero extends JButton {
                 fin = new Color(255, 239, 135);
             }
             default -> {
-                inicio = colorBase.brighter();
-                fin = colorBase;
+                inicio = mezclar(colorBase, Color.WHITE, 0.28f);
+                fin = colorBase.darker();
             }
         }
         g.setPaint(new GradientPaint(0, 0, inicio,
                 getWidth(), getHeight(), fin));
         g.fillRect(0, 0, getWidth(), getHeight());
+        if (destacado == Destacado.NORMAL) {
+            pintarTexturaPiedra(g);
+        }
+        g.setColor(new Color(255, 255, 255, 80));
+        g.drawLine(1, 1, getWidth() - 2, 1);
+        g.drawLine(1, 1, 1, getHeight() - 2);
+        g.setColor(new Color(25, 27, 33, 90));
+        g.drawLine(1, getHeight() - 2, getWidth() - 2, getHeight() - 2);
+        g.drawLine(getWidth() - 2, 1, getWidth() - 2, getHeight() - 2);
         g.dispose();
         super.paintComponent(grafico);
+    }
+
+    private void pintarTexturaPiedra(Graphics2D g) {
+        g.setColor(new Color(48, 45, 48, 25));
+        g.drawLine(0, getHeight() / 3, getWidth() / 3, getHeight() / 4);
+        g.drawLine(getWidth() * 2 / 3, getHeight(),
+                getWidth(), getHeight() * 2 / 3);
+        g.setColor(new Color(255, 255, 255, 25));
+        g.drawLine(getWidth() / 5, 0,
+                getWidth() / 2, getHeight() / 5);
+    }
+
+    private Color mezclar(Color base, Color destino, float proporcion) {
+        float inversa = 1f - proporcion;
+        return new Color(
+                Math.round(base.getRed() * inversa
+                        + destino.getRed() * proporcion),
+                Math.round(base.getGreen() * inversa
+                        + destino.getGreen() * proporcion),
+                Math.round(base.getBlue() * inversa
+                        + destino.getBlue() * proporcion));
     }
 }

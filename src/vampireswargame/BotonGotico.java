@@ -44,13 +44,30 @@ public final class BotonGotico extends JButton {
             superior = new Color(105, 18, 30);
             inferior = new Color(28, 8, 14);
         }
-        g.setPaint(new GradientPaint(0, 0, superior, 0, getHeight(), inferior));
-        g.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 12, 12);
+        g.setColor(new Color(0, 0, 0, 115));
+        g.fillRoundRect(4, 5, getWidth() - 8, getHeight() - 7, 10, 10);
+        g.setPaint(new GradientPaint(0, 2, superior,
+                0, getHeight() - 3, inferior));
+        g.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 6, 10, 10);
         g.setStroke(new BasicStroke(2));
         g.setColor(getModel().isRollover()
                 ? new Color(235, 213, 155) : new Color(145, 128, 100));
-        g.drawRoundRect(2, 2, getWidth() - 5, getHeight() - 5, 12, 12);
+        g.drawRoundRect(2, 2, getWidth() - 5, getHeight() - 7, 10, 10);
+        g.setStroke(new BasicStroke(1));
+        g.setColor(new Color(235, 218, 172, 80));
+        g.drawRoundRect(6, 6, getWidth() - 13, getHeight() - 15, 7, 7);
+        pintarAdorno(g, 10, getHeight() / 2 - 2);
+        pintarAdorno(g, getWidth() - 14, getHeight() / 2 - 2);
         g.dispose();
         super.paintComponent(grafico);
+    }
+
+    private void pintarAdorno(Graphics2D g, int x, int y) {
+        int[] xs = {x, x + 4, x + 8, x + 4};
+        int[] ys = {y + 4, y, y + 4, y + 8};
+        g.setColor(new Color(194, 168, 102));
+        g.fillPolygon(xs, ys, 4);
+        g.setColor(new Color(62, 25, 28));
+        g.drawPolygon(xs, ys, 4);
     }
 }
